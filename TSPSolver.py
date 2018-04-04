@@ -86,6 +86,29 @@ not counting initial BSSF estimate)</returns> '''
     def greedy( self, start_time, time_allowance=60.0 ):
         pass
 
+    def reduceRow(cost_matrix, row_number):
+        m = min(cost_matrix[row_number])
+        for i in len(cost_matrix[row_number]):
+            cost_matrix[row_number][i] -= m
+        return m
+
+    def reduceColumn(cost_matrix, column_number):
+        colunm = []
+        for i in range(len(cost_matrix)):
+            column.append(cost_matrix[i][column_number])
+        m = min(column)
+        for i in range(len(cost_matrix)):
+            cost_matrix[i][column_number] -= m
+        return m
+
+    def reduceCostMatrix(cost_matrix):
+        low_bound = 0
+        for i in range(len(cost_matrix)):
+            low_bound += reduceRow(cost_matrix)
+        for i in range(len(cost_matrix)):
+            low_bound += reduceColumn(cost_matrix)
+        return low_bound
+
     def branchAndBound( self, start_time, time_allowance=60.0 ):
         cities = self._scenario.getCities()
         initial_cost_matrix = np.arange(len(cities)**2).reshape(len(cities), len(cities))
@@ -95,6 +118,8 @@ not counting initial BSSF estimate)</returns> '''
                     initial_cost_matrix[i][j] = float('inf')
                     continue
                 initial_cost_matrix[i][j] = cities[i].costTo(cities[j])
+
+        low_bound = reduceCostMatrix(initial_cost_matrix)
 
     def fancy( self, start_time, time_allowance=60.0 ):
         pass
