@@ -122,6 +122,7 @@ not counting initial BSSF estimate)</returns> '''
 
 
     def branchAndBound( self, start_time, time_allowance=60.0 ):
+        start_time = time.time()
         cities = self._scenario.getCities()
         initial_cost_matrix = np.arange(float(len(cities))**2).reshape(len(cities), len(cities))
         for i in range(len(cities)):
@@ -135,13 +136,16 @@ not counting initial BSSF estimate)</returns> '''
         pelim_results = self.defaultRandomTour(time.time())
         bssf = {}
         bssf['cost'] = pelim_results['cost']
-        bssf['soln'] = pelim_results['soln']
+        bssf['cost'] = float('inf')
+        #bssf['soln'] = pelim_results['soln']
+        bssf['soln'] = [0,1,2,3]
 
         while len(pq) != 0 and time.time() - start_time < 60:
             state = heapq.heappop(pq)
             depth = len(cities) - state[0]
             low_bound = state[1]
             visited = state[2]
+            print(state)
             cost_matrix = state[3]
             if depth == len(cities) - 1: # this means that the next node is the last node
                 if low_bound < bssf['cost']: # see if this is a better path
@@ -160,9 +164,22 @@ not counting initial BSSF estimate)</returns> '''
                     nlow_bound += reduceCostMatrix(new_cm)
                     if nlow_bound < bssf['cost']:
                         nvisited = list(visited)
-                        heapq.heappush(pq, (len(cities) - depth - 1, nlow_bound, nvisited.append(i), new_cm))
+                        nvisited.append(i)
+                        heapq.heappush(pq, (len(cities) - depth - 1, nlow_bound, nvisited, new_cm))
                     # if not better it was just pruned
                 # we can't go to this (i) verticy. It is us or already visited
+
+        csoln = []
+        for i in bssf['soln']:
+            csoln.append(cities[i])
+            
+        route = TSPSolution(csoln)
+        results = {}
+        results['soln'] = route
+        results['cost'] = route.costOfRoute()
+        results['time'] = time.time() - start_time
+        results['count'] = 7
+        return results
 
     def fancy( self, start_time, time_allowance=60.0 ):
         pass
