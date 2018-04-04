@@ -87,7 +87,14 @@ not counting initial BSSF estimate)</returns> '''
         pass
 
     def branchAndBound( self, start_time, time_allowance=60.0 ):
-        pass
+        cities = self._scenario.getCities()
+        initial_cost_matrix = np.arange(len(cities)**2).reshape(len(cities), len(cities))
+        for i in range(len(cities)):
+            for j in range(len(cities)):
+                if i == j:
+                    initial_cost_matrix[i][j] = float('inf')
+                    continue
+                initial_cost_matrix[i][j] = cities[i].costTo(cities[j])
 
     def fancy( self, start_time, time_allowance=60.0 ):
         pass
