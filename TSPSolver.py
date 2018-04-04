@@ -86,17 +86,29 @@ not counting initial BSSF estimate)</returns> '''
     def greedy( self, start_time, time_allowance=60.0 ):
         pass
 
+    def setColumn(cost_matrix, column, value):
+        for i in range(len(cost_matrix)):
+            cost_matrix[i][column] = value
+
+    def setRow(cost_matrix, row, value):
+        for i in range(len(cost_matrix)):
+            cost_matrix[row][i] = value
+
     def reduceRow(cost_matrix, row_number):
         m = min(cost_matrix[row_number])
-        for i in len(cost_matrix[row_number]):
+        if m == float('inf'):
+            return 0
+        for i in range(len(cost_matrix[row_number])):
             cost_matrix[row_number][i] -= m
         return m
 
     def reduceColumn(cost_matrix, column_number):
-        colunm = []
+        column = []
         for i in range(len(cost_matrix)):
             column.append(cost_matrix[i][column_number])
         m = min(column)
+        if m == float('inf'):
+            return 0
         for i in range(len(cost_matrix)):
             cost_matrix[i][column_number] -= m
         return m
@@ -104,9 +116,9 @@ not counting initial BSSF estimate)</returns> '''
     def reduceCostMatrix(cost_matrix):
         low_bound = 0
         for i in range(len(cost_matrix)):
-            low_bound += reduceRow(cost_matrix)
+            low_bound += reduceRow(cost_matrix, i)
         for i in range(len(cost_matrix)):
-            low_bound += reduceColumn(cost_matrix)
+            low_bound += reduceColumn(cost_matrix, i)
         return low_bound
 
     def branchAndBound( self, start_time, time_allowance=60.0 ):
