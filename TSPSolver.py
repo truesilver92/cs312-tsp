@@ -136,21 +136,30 @@ not counting initial BSSF estimate)</returns> '''
         pelim_results = self.defaultRandomTour(time.time())
         bssf = {}
         bssf['cost'] = pelim_results['cost']
-        bssf['cost'] = float('inf')
-        #bssf['soln'] = pelim_results['soln']
-        bssf['soln'] = [0,1,2,3]
+        #bssf['cost'] = float('inf')
+        bssf['soln'] = pelim_results['soln']
+        bssf['count'] = 0
+        
 
         while len(pq) != 0 and time.time() - start_time < 60:
             state = heapq.heappop(pq)
             depth = len(cities) - state[0]
             low_bound = state[1]
             visited = state[2]
-            print(state)
             cost_matrix = state[3]
-            if depth == len(cities) - 1: # this means that the next node is the last node
+            if depth == len(cities): # this means that the next node is the last node
                 if low_bound < bssf['cost']: # see if this is a better path
-                    bssf['cost'] = low_bound
-                    bssf['soln'] = visited
+                    print("length of visited: ")
+                    print(len(visited))
+                    #bssf['cost'] = low_bound
+                    bssf['soln'] = []
+                    for i in visited:
+                        bssf['soln'].append(cities[i])
+                    #bssf['soln'].append(cities[0])
+                    bssf['soln'] = TSPSolution(bssf['soln'])
+                    bssf['cost'] = bssf['soln'].costOfRoute()
+                    bssf['count'] += 1
+                    print(visited)
                 continue
 
             for i in range(1, len(cities)):
@@ -169,17 +178,8 @@ not counting initial BSSF estimate)</returns> '''
                     # if not better it was just pruned
                 # we can't go to this (i) verticy. It is us or already visited
 
-        csoln = []
-        for i in bssf['soln']:
-            csoln.append(cities[i])
-            
-        route = TSPSolution(csoln)
-        results = {}
-        results['soln'] = route
-        results['cost'] = route.costOfRoute()
-        results['time'] = time.time() - start_time
-        results['count'] = 7
-        return results
+        bssf['time'] = time.time() - start_time
+        return bssf
 
     def fancy( self, start_time, time_allowance=60.0 ):
         pass
