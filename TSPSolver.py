@@ -138,8 +138,11 @@ not counting initial BSSF estimate)</returns> '''
         bssf['cost'] = pelim_results['cost']
         #bssf['cost'] = float('inf')
         bssf['soln'] = pelim_results['soln']
-        bssf['count'] = 0
-        
+        bssf['count'] = 1
+
+        states_created = 1
+        states_pruned = 0
+        states_max = 0
 
         while len(pq) != 0 and time.time() - start_time < 60:
             state = heapq.heappop(pq)
@@ -149,8 +152,6 @@ not counting initial BSSF estimate)</returns> '''
             cost_matrix = state[3]
             if depth == len(cities): # this means that the next node is the last node
                 if low_bound < bssf['cost']: # see if this is a better path
-                    print("length of visited: ")
-                    print(len(visited))
                     #bssf['cost'] = low_bound
                     bssf['soln'] = []
                     for i in visited:
@@ -159,7 +160,6 @@ not counting initial BSSF estimate)</returns> '''
                     bssf['soln'] = TSPSolution(bssf['soln'])
                     bssf['cost'] = bssf['soln'].costOfRoute()
                     bssf['count'] += 1
-                    print(visited)
                 continue
 
             for i in range(1, len(cities)):
@@ -171,14 +171,21 @@ not counting initial BSSF estimate)</returns> '''
                     setColumn(new_cm, i, float('inf'))
                     new_cm[i][visited[len(visited) - 1]] = float('inf')
                     nlow_bound += reduceCostMatrix(new_cm)
+                    states_created += 1
                     if nlow_bound < bssf['cost']:
                         nvisited = list(visited)
                         nvisited.append(i)
                         heapq.heappush(pq, (len(cities) - depth - 1, nlow_bound, nvisited, new_cm))
+                        states_max = max(states_max, len(pq))
+                        continue
+                    states_pruned += 1
                     # if not better it was just pruned
                 # we can't go to this (i) verticy. It is us or already visited
 
         bssf['time'] = time.time() - start_time
+        print("states_created: " + str(states_created))
+        print("states_pruned: " + str(states_pruned))
+        print("states_max: " + str(states_max))
         return bssf
 
     def fancy( self, start_time, time_allowance=60.0 ):
