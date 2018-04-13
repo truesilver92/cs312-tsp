@@ -118,6 +118,7 @@ not counting initial BSSF estimate)</returns> '''
 
 
     def greedy( self, start_time, time_allowance=60.0 ):
+        
         pass
 
 
