@@ -16,6 +16,9 @@ import numpy as np
 from TSPClasses import *
 import heapq
 
+#########################
+# start of stuff for fancy (ACO)
+
 alpha = 1
 beta = 1
 rho = 0.5
@@ -25,6 +28,68 @@ max_iterations = 1
 cost_pos = 0 # the index in the inner list where the cost of the edge is stored
 ph_pos = 1 # the index in the inner list where the pharamone value of the edge is stored
 
+def init_adjacencyMatrix():
+    initial_cost_matrix = np.arange(float(len(cities))**2).reshape(len(cities), len(cities))# creates the matrix time: O(n^2) space: O(n^2)
+    for i in range(len(cities)): # fill the matrix with the correct initial values time: O(n^2) space: O(1)
+        for j in range(len(cities)):
+            k = np.arange(float(2.0))
+            initial_cost_matrix[i][j] = k
+            k[cost_pos] = cities[i].costTo(cities[j])
+            k[ph_pos] = 1.0
+    return initial_cost_matrix
+            
+
+def init_ants(ants, cities):
+    for a in ants:
+        a.visited = []
+        a.not_visited = list(cities)
+        r = np.random.random_integers(0, len(cities) - 1)
+        a.visited.append(a.not_visited[r])
+        a.not_visited.pop(r)
+        a.cost = 0
+
+def calcProbability(from_city, to_city, m):
+    return m[from_city._index][to_city._index][cost_pos]**(-beta) * m[from_city._index][to_city._index][ph_pos]**alpha
+            
+def dewTour(m, ant):
+    while len(ant.not_visited) != 0:
+        p_list = [] # put edge probabilities here
+        last_visited = ant.visited[len(ant.visited) - 1]
+        numerator_sum = 0.0
+
+        for i in ant.not_visited:
+            probability = calcProbability(last_visited, i, m)
+            p_list.append(probability)
+            numerator_sum += probability
+        next = np.random.choice(ant.not_visited, 1, map(lambda x:x/numerator_sum, p_list))
+        ant.visited.append(next)
+        ant.not_visited.remove(next)
+        ant.cost += m[last_visited._index][next._index][cost_pos]
+
+def updatePharamones(m, ants):
+    for i in len(m):
+        for j in len(m[i]):
+            m[i][j][ph_pos] *= rho
+
+    for a in ants:
+        ph_add = Q / a.cost
+        for i in range(len(m) - 1):
+            m[ant.visited[i]._index][ant.visited[i + 1]._index][ph_pos] += ph_add
+        m[ant.visited[len(ant.visited) - 1]._index][ant.visited[0]._index][ph_pos] += ph_add
+
+def minTour(ants):
+    results = None
+    c = float('inf')
+    for a in ants:
+        sol = TSPSolution(a.visited)
+        cost = sol.costOfRoute()
+        if cost < c:
+            results = sol
+            c = cost
+    return results
+
+#########################
+# end of fancy crap
 
 def setColumn(cost_matrix, column, value):# sets the entire column to value time: O(n) space: O(1)
     for i in range(len(cost_matrix)):# time: O(n) space: O(1)
@@ -199,57 +264,10 @@ not counting initial BSSF estimate)</returns> '''
         print("states_max: " + str(states_max))
         return bssf
 
-    def init_adjacencyMatrix():
-        initial_cost_matrix = np.arange(float(len(cities))**2).reshape(len(cities), len(cities))# creates the matrix time: O(n^2) space: O(n^2)
-        for i in range(len(cities)): # fill the matrix with the correct initial values time: O(n^2) space: O(1)
-            for j in range(len(cities)):
-                k = np.arange(float(2.0))
-                initial_cost_matrix[i][j] = k
-                k[cost_pos] = cities[i].costTo(cities[j])
-                k[ph_pos] = 1.0
-        return initial_cost_matrix
-            
-
-    def init_ants(ants, cities):
-        for a in ants:
-            a.visited = []
-            a.not_visited = list(cities)
-            a.cost = 0
-
-    def calcProbability(from_city, to_city, m):
-        return m[from_city._index][to_city._index][cost_pos]**(-beta) * m[from_city._index][to_city._index][ph_pos]**alpha
-            
-    def dewTour(m, ant):
-        while len(ant.not_visited) != 0:
-            p_list = [] # put edge probabilities here
-            last_visited = ant.visited[len(ant.visited) - 1]
-            numerator_sum = 0.0
-
-            for i in ant.not_visited:
-                probability = calcProbability(last_visited, i, m))
-                p_list.append(probability)
-                numerator_sum += probability
-            next = np.random.choice(ant.not_visited, 1, map(lambda x:x/numerator_sum, p_list))
-            ant.visited.append(next)
-            ant.not_visited.remove(next)
-            ant.cost += m[last_visited._index][next._index][cost_pos]
-
-    def updatePharamones(m, ants):
-        for i in len(m):
-            for j in len(m[i]):
-                m[i][j][ph_pos] *= rho
-
-        for a in ants:
-            ph_add = Q / a.cost
-            for i in range(len(m) - 1):
-                m[ant.visited[i]._index][ant.visited[i + 1]._index][ph_pos] += ph_add
-            m[ant.visited[len(ant.visited) - 1]._index][ant.visited[0]._index][ph_pos] += ph_add
-
     def fancy( self, start_time, time_allowance=60.0 ):
         # set up of local variables
         start_time = time.time()
         cities = self._scenario.getCities()
-        bssf
         min_cost = float('inf')
         m = init_adjacencyMatrix() # setup the edge matrix
         ants = []
@@ -263,4 +281,10 @@ not counting initial BSSF estimate)</returns> '''
             for j in ants:
                 dewTour(m, j)
             updatePharamones(m, ants)
-        return minTour(ants)
+        bssf = minTour(ants)
+        results = {}
+        results['time'] = time.time() - start_time
+        results['soln'] = bssf
+        results['cost'] = bssf.costOfRoute()
+        results['count'] = 1337
+        return results
