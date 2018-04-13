@@ -47,7 +47,10 @@ def nameForInt( num ):
         return nameForInt((num-1) // 26 ) + nameForInt((num-1)%26+1)
 
 
-
+class Ant:
+    visited = []
+    not_visited = []
+    cost = 0.0
 
 
 

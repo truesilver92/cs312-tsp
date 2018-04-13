@@ -189,7 +189,7 @@ not counting initial BSSF estimate)</returns> '''
         print("states_max: " + str(states_max))
         return bssf
 
-    def init_adjacencyMatrix(m, cost_pos, ph_pos):
+    def init_adjacencyMatrix(cost_pos, ph_pos):
         initial_cost_matrix = np.arange(float(len(cities))**2).reshape(len(cities), len(cities))# creates the matrix time: O(n^2) space: O(n^2)
         for i in range(len(cities)): # fill the matrix with the correct initial values time: O(n^2) space: O(1)
             for j in range(len(cities)):
@@ -197,6 +197,29 @@ not counting initial BSSF estimate)</returns> '''
                 initial_cost_matrix[i][j] = k
                 k[cost_pos] = cities[i].costTo(cities[j])
                 k[ph_pos] = 0.0
+        return initial_cost_matrix
+            
+
+    def init_ants(ants, cities):
+        for a in ants:
+            a.visited = []
+            a.not_visited = list(cities)
+            a.cost = 0
+    
+    def dewTour(m, ant,):
+        while len(ant.not_visited) != 0:
+            p_list = [] # put edge probabilities here
+            last_visited = ant.visited[len(ant.visited) - 1]
+            numerator_sum = 0.0
+
+            for i in ant.not_visited:
+                probability = calcProbability(last_visited, i, m))
+                p_list.append(probability)
+                numerator_sum += probability
+            next = np.random.choice(ant.not_visited, 1, map(lambda x:x/numerator_sum, p_list))
+            ant.visited.append(next)
+            ant.not_visited.remove(next)
+            ant.cost += m[last_visited][next][cost_pos]
 
     def fancy( self, start_time, time_allowance=60.0 ):
         # set up of local variables
@@ -212,12 +235,16 @@ not counting initial BSSF estimate)</returns> '''
         ph_pos = 1# the index in the inner list where the pharamone value of the edge is stored
         bssf
         min_cost = float('inf')
-        m = init_adjacencyMatrix(m) # setup the edge matrix
-        #TODO setup ant objects
-
+        m = init_adjacencyMatrix(cost_pos, ph_pos) # setup the edge matrix
+        ants = []
+        
+        # setup ant objects
+        for a in range(ants_count):
+            ants.append(Ant())
+        
         for i in range(max_iterations):
-            init_ants(ants)
+            init_ants(ants, cities)
             for j in ants:
-                doTour(j)
+                dewTour(m, j)
             updatePharamones(m, ants)
         return minTour(ants)
