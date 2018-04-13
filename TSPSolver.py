@@ -189,7 +189,29 @@ not counting initial BSSF estimate)</returns> '''
         print("states_max: " + str(states_max))
         return bssf
 
+    def init_adjacencyMatrix(m):
+        
+
     def fancy( self, start_time, time_allowance=60.0 ):
-        pass
+        # set up of local variables
+        start_time = time.time()
+        cities = self._scenario.getCities()
+        ants_count = 10  # number of ants to use
+        alpha = 1
+        beta = 1
+        rho = 0.5
+        Q = 1
+        max_iterations = 1
+        cost_pos = 0 # the index in the inner list where the cost of the edge is stored
+        ph_pos = 1# the index in the inner list where the pharamone value of the edge is stored
+        bssf
+        min_cost = float('inf')
+        m = init_adjacencyMatrix(m) # setup the edge matrix
+        #TODO setup ant objects
 
-
+        for i in range(max_iterations):
+            init_ants(ants)
+            for j in ants:
+                doTour(j)
+            updatePharamones(m, ants)
+        return minTour(ants)
