@@ -189,8 +189,14 @@ not counting initial BSSF estimate)</returns> '''
         print("states_max: " + str(states_max))
         return bssf
 
-    def init_adjacencyMatrix(m):
-        
+    def init_adjacencyMatrix(m, cost_pos, ph_pos):
+        initial_cost_matrix = np.arange(float(len(cities))**2).reshape(len(cities), len(cities))# creates the matrix time: O(n^2) space: O(n^2)
+        for i in range(len(cities)): # fill the matrix with the correct initial values time: O(n^2) space: O(1)
+            for j in range(len(cities)):
+                k = np.arange(float(2.0))
+                initial_cost_matrix[i][j] = k
+                k[cost_pos] = cities[i].costTo(cities[j])
+                k[ph_pos] = 0.0
 
     def fancy( self, start_time, time_allowance=60.0 ):
         # set up of local variables
