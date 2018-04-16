@@ -20,11 +20,11 @@ import heapq
 # start of stuff for fancy (ACO)
 
 alpha = 1
-beta = 1
+beta = 0.25
 rho = 0.5
 ants_count = 10  # number of ants to use
 Q = 1
-max_iterations = 10
+max_iterations = 100
 cost_pos = 0 # the index in the inner list where the cost of the edge is stored
 ph_pos = 1 # the index in the inner list where the pharamone value of the edge is stored
 
@@ -32,10 +32,10 @@ def init_adjacencyMatrix(cities):
     initial_cost_matrix = np.arange(float(len(cities))**2 * 2).reshape(len(cities), len(cities), 2)# creates the matrix time: O(n^2) space: O(n^2)
     for i in range(len(cities)): # fill the matrix with the correct initial values time: O(n^2) space: O(1)
         for j in range(len(cities)):
-            k = np.arange(float(2.0))
-            initial_cost_matrix[i][j] = k
-            k[cost_pos] = cities[i].costTo(cities[j])
-            k[ph_pos] = 1.0
+            initial_cost_matrix[i][j] = np.arange(float(2.0))
+            initial_cost_matrix[i][j][cost_pos] = cities[i].costTo(cities[j])
+            initial_cost_matrix[i][j][ph_pos] = 1.0
+            #print(initial_cost_matrix[i][j])
     return initial_cost_matrix
             
 
@@ -61,15 +61,20 @@ def dewTour(m, ant):
             probability = calcProbability(last_visited, i, m)
             p_list.append(probability)
             numerator_sum += probability
+        print(p_list/numerator_sum)
         next = np.random.choice(ant.not_visited, 1, map(lambda x:x/numerator_sum, p_list))[0]
+        print(next._index)5
         ant.visited.append(next)
         ant.not_visited.remove(next)
-        ant.cost += m[last_visited._index][next._index][cost_pos]
+        ant.cost = ant.cost + m[last_visited._index][next._index][cost_pos]
+    #print("ant.cost: %s" %ant.cost)
 
 def updatePharamones(m, ants):
     for i in range(len(m)):
         for j in range(len(m[i])):
+            #print("before: %f" %m[i][j][ph_pos])
             m[i][j][ph_pos] *= rho
+            #print("after: %f" %m[i][j][ph_pos])
 
     for ant in ants:
         ph_add = Q / ant.cost
@@ -84,10 +89,10 @@ def minTour(ants):
         #print(list(map(lambda x:x._index, a.visited)))
         sol = TSPSolution(a.visited)
         cost = sol.costOfRoute()
-        print("sol: %s" %list(map(lambda x:x._index, a.visited)))
-        print("cost: %f" %cost)
+        #print("sol: %s" %list(map(lambda x:x._index, a.visited)))
+        #print("cost: %f" %cost)
         if cost < c:
-            print("hi")
+            #print("hi")
             results = sol
             c = cost
     return results
@@ -285,6 +290,7 @@ not counting initial BSSF estimate)</returns> '''
             for j in ants:
                 dewTour(m, j)
             updatePharamones(m, ants)
+        print(m)
         bssf = minTour(ants)
         results = {}
         results['time'] = time.time() - start_time
