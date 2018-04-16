@@ -21,10 +21,10 @@ import heapq
 
 alpha = 1
 beta = 1
-rho = 0.125
-ants_count = 400  # number of ants to use
-Q = 5
-max_iterations = 25
+rho = 0.5
+ants_count = 30  # number of ants to use
+Q = 1
+max_iterations = 30
 cost_pos = 0 # the index in the inner list where the cost of the edge is stored
 ph_pos = 1 # the index in the inner list where the pharamone value of the edge is stored
 
@@ -199,11 +199,72 @@ not counting initial BSSF estimate)</returns> '''
        # return results;
         return results
 
-
+    def initialize_matrix(self, cities):
+        matrix = np.empty(shape=(len(cities), len(cities)))
+        for i in range(0, len(cities)):
+            for j in range(0, len(cities)):
+                if i == j:
+                    # puts infinity on the diagonals
+                    matrix[i, j] = float("inf")
+                else:
+                    matrix[i, j] = cities[i].costTo(cities[j])
+        return matrix
+    def set_vals_to_infinity(self, matrix, ind_a, ind_b, length):
+        matrix[ind_a,:] = float("inf") # time O(n)
+        matrix[:,ind_b] = float("inf") # time O(n)
+        matrix[ind_b, ind_a] = float("inf") # time O(1)
 
     def greedy( self, start_time, time_allowance=60.0 ):
-        
-        pass
+        start_time = time.time()
+        cities = self._scenario.getCities()
+        solution = self.prims_alg(self.initialize_matrix(cities), cities, 0)
+        for i in range(1, len(cities)):
+            temp_solution = self.prims_alg(self.initialize_matrix(cities), cities, i)
+            total = solution.costOfRoute()
+            amount = temp_solution.costOfRoute()
+            length = len(temp_solution.route)
+            if temp_solution.costOfRoute() < solution.costOfRoute() and len(temp_solution.route) >= len(cities):
+                solution = temp_solution
+    
+        results = {}
+        results['cost'] = solution.costOfRoute()
+        results['time'] = time.time() - start_time
+        results['count'] = 1
+        results['soln'] = solution
+        return results
+
+
+    def prims_alg(self, matrix, cities, city_index):
+        # time O(n^2) space O(n)
+        min_vals = np.argmin(matrix, axis=1)
+        route = [] # array of indecies of the correct route
+        route.append(city_index)
+        index = min_vals[city_index]
+        route.append(index)
+        self.set_vals_to_infinity(matrix, 0, index, len(cities))
+        self.set_vals_to_infinity(matrix, city_index, city_index, len(cities))
+        # time O(n)
+        while True:
+            low = float("inf")
+            temp_ind = index
+            for i in range(0, len(cities)):
+                if matrix[index, i] < low:
+                    low = matrix[index, i]
+                    temp_ind = i
+            if low == float("inf"):
+                break
+            else:
+                self.set_vals_to_infinity(matrix, index, temp_ind, len(cities))
+                index = temp_ind
+                route.append(index)
+        # route.append(0)
+        # print(matrix)
+        city_route = [] # take the indecies of the route, and make an array of cities at those indecies
+        # time O(n) space O(n)
+        for r in route:
+            city_route.append(cities[r])
+    
+        return TSPSolution(city_route)
 
 
     def branchAndBound( self, start_time, time_allowance=60.0 ):# the branchAndBound algorithm
