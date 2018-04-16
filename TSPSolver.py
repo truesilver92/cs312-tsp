@@ -20,11 +20,11 @@ import heapq
 # start of stuff for fancy (ACO)
 
 alpha = 1
-beta = 0.25
-rho = 0.5
-ants_count = 10  # number of ants to use
-Q = 1
-max_iterations = 100
+beta = 1
+rho = 0.125
+ants_count = 400  # number of ants to use
+Q = 5
+max_iterations = 25
 cost_pos = 0 # the index in the inner list where the cost of the edge is stored
 ph_pos = 1 # the index in the inner list where the pharamone value of the edge is stored
 
@@ -61,9 +61,9 @@ def dewTour(m, ant):
             probability = calcProbability(last_visited, i, m)
             p_list.append(probability)
             numerator_sum += probability
-        print(p_list/numerator_sum)
+        #print(p_list/numerator_sum)
         next = np.random.choice(ant.not_visited, 1, map(lambda x:x/numerator_sum, p_list))[0]
-        print(next._index)5
+        #print(next._index)
         ant.visited.append(next)
         ant.not_visited.remove(next)
         ant.cost = ant.cost + m[last_visited._index][next._index][cost_pos]
@@ -290,7 +290,7 @@ not counting initial BSSF estimate)</returns> '''
             for j in ants:
                 dewTour(m, j)
             updatePharamones(m, ants)
-        print(m)
+        #print(m)
         bssf = minTour(ants)
         results = {}
         results['time'] = time.time() - start_time
