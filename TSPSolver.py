@@ -22,9 +22,9 @@ import heapq
 alpha = 1
 beta = 1
 rho = 0.5
-ants_count = 30  # number of ants to use
+ants_count = 2000  # number of ants to use
 Q = 1
-max_iterations = 30
+max_iterations = 100
 cost_pos = 0 # the index in the inner list where the cost of the edge is stored
 ph_pos = 1 # the index in the inner list where the pharamone value of the edge is stored
 
@@ -76,7 +76,11 @@ def updatePharamones(m, ants):
             m[i][j][ph_pos] *= rho
             #print("after: %f" %m[i][j][ph_pos])
 
+    print(min(map(lambda x:x.cost,ants)))
+
     for ant in ants:
+        if ant.cost == float('inf'):
+            continue
         ph_add = Q / ant.cost
         for i in range(len(m) - 1):
             m[ant.visited[i]._index][ant.visited[i + 1]._index][ph_pos] += ph_add
@@ -345,14 +349,25 @@ not counting initial BSSF estimate)</returns> '''
         # setup ant objects
         for a in range(ants_count):
             ants.append(Ant())
+
+        bssf = None
         
         for i in range(max_iterations):
+            print("iterations left:")
+            print(max_iterations - i)
             init_ants(ants, cities)
             for j in ants:
                 dewTour(m, j)
             updatePharamones(m, ants)
+            potential_bssf = minTour(ants)
+            if bssf == None:
+                bssf = potential_bssf
+                continue
+            if potential_bssf.costOfRoute() < bssf.costOfRoute():
+                bssf = potential_bssf
+            
         #print(m)
-        bssf = minTour(ants)
+        #bssf = minTour(ants)
         results = {}
         results['time'] = time.time() - start_time
         results['soln'] = bssf
